@@ -1,0 +1,192 @@
+E3
+----------------------------------------------------
+E3.1
+----------------------------------------------------
+# Create a Z error on qubit 4
+z_error_4 = error(error_type = "Z", wires = [4])
+print(z_error_4)
+
+# Create a YX error on qubits 8 and 0
+yx_error_80 = error(error_type = "YX", wires = [8, 0])
+print(yx_error_80)
+
+# Create a XXZZYY error on qubits 1, 2, 3, 4, 5, and 0.
+xxzzyy_error_123450 = error(error_type = "XXZZYY", wires = [1, 2, 3, 4, 5, 0])
+
+
+
+E3.2
+----------------------------------------------------
+dev = qml.device("default.qubit", wires=9)
+
+@qml.qnode(dev)
+def shor(state, error_type, wires):
+    """A quantum circuit that implements Shor's 9-qubit code
+    
+    Args:
+        state (tensor): a numpy array representing a 1-qubit state: alpha |0> + beta |1>
+                        This is used to initialize the 0th wire with qml.QubitStateVector
+        error_type (str): for example, XX, YY, XZ, YZ.
+        wires (list(int)): the wires the error acts on.
+    
+    Returns:
+        (tuple(tensor, tensor)): the separate probability distributions over the 0th wire (|psi>)
+        and all 8 ancillary qubits in that order.
+    """
+
+    qml.QubitStateVector(state, wires=0)
+    qml.CNOT(wires=[0, 3])
+    qml.CNOT(wires=[0, 6])
+    qml.Hadamard(wires=0)
+    qml.Hadamard(wires=3)
+    qml.Hadamard(wires=6)
+    qml.CNOT(wires=[0, 1])
+    qml.CNOT(wires=[0, 2])
+    qml.CNOT(wires=[3, 4])
+    qml.CNOT(wires=[3, 5])
+    qml.CNOT(wires=[6, 7])
+    qml.CNOT(wires=[6, 8])
+    
+    # apply the error
+    for err in error(error_type=error_type, wires=wires):
+        err
+
+    qml.CNOT(wires=[0, 1])
+    qml.CNOT(wires=[0, 2])
+    qml.Toffoli(wires=[1, 2, 0])
+    qml.CNOT(wires=[3, 4])
+    qml.CNOT(wires=[3, 5])
+    qml.Toffoli(wires=[4, 5, 3])
+    qml.CNOT(wires=[6, 7])
+    qml.CNOT(wires=[6, 8])
+    qml.Toffoli(wires=[7, 8, 6])
+    qml.Hadamard(wires=0)
+    qml.Hadamard(wires=3)
+    qml.Hadamard(wires=6)
+    qml.CNOT(wires=[0, 3])
+    qml.CNOT(wires=[0, 6])
+    qml.Toffoli(wires = [3, 6, 0])
+    
+    return qml.probs(wires=0), qml.probs(wires=range(1, 9))
+
+    return qml.probs(wires=0), qml.probs(wires=range(1, 9))
+
+
+
+
+E3.3
+----------------------------------------------------
+def decoded(state, error_type, wires):
+    """Tells us whether the state was decoded by Shor's code
+    
+    Args:
+        state (tensor): a numpy array representing a 1-qubit state: alpha |0> + beta |1>
+        error_type (str): for example, XX, YY, XZ, YZ.
+        wires (list(int)): the wires the error acts on.
+    
+    Returns:
+        (bool): True if state is decoded successfully, False if not. 
+    """
+    ##################
+    # YOUR CODE HERE #
+    ##################
+    prob1 = np.conjugate(state)*state
+    prob0 = shor(state, error_type, wires)[0]
+    if (prob0[0] - prob1[0] < 0.1):
+        return True 
+    return False
+
+state = random_state()
+
+single_qubit_errors = [["X", [i]] for i in range(9)]
+single_qubit_errors += [["Y", [i]] for i in range(9)]
+single_qubit_errors += [["Z", [i]] for i in range(9)]
+
+decoded_list = []
+
+for err in single_qubit_errors:
+    decoded_list.append(decoded(state, *err))
+
+print(decoded_list)
+
+
+
+
+E3.4
+----------------------------------------------------
+def find_the_one(syndrome):
+    """Finds the entry in the error syndrome that is equal to 1.
+
+    Args:
+        syndrome (tensor): The second output of the shor function — qml.probs(wires=range(1, 9))
+
+    Returns:
+        (int): the index of the syndrome vector that is equal to 1. For example, 
+        if syndrome = [0, 0, 1, 0], then this function would return 2.
+    """
+    index = np.nonzero(syndrome)
+    if (len(index) != 1):
+        print('number of nonzero elemnts is not 1')
+        sys.exit()
+    print(index)
+    return index[0] 
+
+
+
+
+
+E3.5
+----------------------------------------------------
+single_qubit_errors = [["X", [i]] for i in range(9)]
+single_qubit_errors += [["Y", [i]] for i in range(9)]
+single_qubit_errors += [["Z", [i]] for i in range(9)]
+
+all_syndromes = []
+unique_syndromes = []
+degenerate_syndromes = {}
+
+state = random_state()
+
+for err in single_qubit_errors:
+    ind = find_the_one(shor(state, *err)[1])
+
+    if ind in unique_syndromes: 
+        # find other error that gave the same syndrome
+        other_ind = np.where(np.array(all_syndromes) == ind)[0].item()
+        unique_syndromes.remove(ind) # remove it from the unique syndromes
+        degenerate_syndromes[ind] = [single_qubit_errors[other_ind], err]
+    
+    elif ind in degenerate_syndromes.keys(): 
+        degenerate_syndromes[ind].append(err)
+
+    else:
+        unique_syndromes.append(ind)
+
+    all_syndromes.append(ind)
+
+################
+# PRESS SUBMIT #
+################
+
+print(degenerate_syndromes)
+
+
+
+
+
+E3.6
+----------------------------------------------------
+state = random_state()
+
+xxzz_error_0458 = ["XXZZ", [0, 4, 5, 8]]
+xxyyzz_error_371820 = ["XXYYZZ", [3, 7, 1, 8, 2, 0]]
+xyzxyzxyz_error_012345678 = ["XYZXYZXYZ", [0, 1, 2, 3, 4, 5, 6, 7, 8]]
+
+errors = [xxzz_error_0458, xxyyzz_error_371820, xyzxyzxyz_error_012345678]
+
+decoded_list = []
+
+for err in errors:
+    decoded_list.append(decoded(state, *err))
+
+print(decoded_list)

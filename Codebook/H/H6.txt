@@ -1,0 +1,39 @@
+H6
+----------------------------------------------------
+H6.1
+----------------------------------------------------
+aux = 0
+main = 1
+n_bits = 2
+dev = qml.device("default.qubit", wires=n_bits)
+
+def add_two_unitaries(U, V):
+    """A circuit to apply the sum of two unitaries non-deterministically.
+    
+    Args:
+        U (array): A unitary matrix, stored as a complex array.
+        V (array): A unitary matrix, stored as a complex array.
+    """
+    qml.Hadamard(wires=aux)
+    qml.ControlledQubitUnitary(U,control_wires=[0], wires=1,control_values='0')
+    qml.ControlledQubitUnitary(V,control_wires=[0], wires=1,control_values='1')
+    qml.Hadamard(wires=aux)
+
+
+
+
+H6.2
+----------------------------------------------------
+@qml.qnode(dev)
+def X_plus_Z():
+    """Apply X + Z to |0> and return the state."""
+    add_two_unitaries(qml.PauliX.compute_matrix(),qml.PauliZ.compute_matrix())
+    return qml.state()
+
+print("The amplitudes on the main register are proportional to", X_plus_Z()[:2], ".")
+
+
+
+
+H6.3
+---------------------------------------------------

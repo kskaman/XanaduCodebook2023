@@ -1,0 +1,107 @@
+F1
+----------------------------------------------------
+F1.1
+----------------------------------------------------
+def values_to_coefficients(values):
+    """Returns the coefficient representation of a polynomial
+    
+    Args:
+        values (array[complex]): a 1-D complex array with 
+            the value representation of a polynomial 
+
+    Returns: 
+        array[complex]: a 1-D complex array of coefficients
+    """
+    
+    return np.fft.ifft(values)
+
+
+A = [10.+0.j,  2.-2.j,  2.+0.j,  2.+2.j]
+print(values_to_coefficients(A))
+
+
+
+
+
+F1.2
+----------------------------------------------------
+def values_to_coefficients(values):
+    """Returns the coefficient representation of a polynomial
+    
+    Args:
+        values (array[complex]): a 1-D complex array with 
+            the value representation of a polynomial 
+
+    Returns: 
+        array[complex]: a 1-D complex array of coefficients
+    """
+    
+    return np.fft.ifft(values)
+
+
+A = [10.+0.j,  2.-2.j,  2.+0.j,  2.+2.j]
+print(values_to_coefficients(A))
+
+
+
+
+
+F1.3
+----------------------------------------------------
+def nearest_power_of_2(x):
+    """Given an integer, return the nearest power of 2. 
+    
+    Args:
+        x (int): a positive integer
+
+    Returns: 
+        int: the nearest power of 2 of x
+    """
+    power = np.ceil(np.log2(x))
+    return int(np.power(2, power))
+
+
+
+
+F1.4
+----------------------------------------------------
+def fft_multiplication(poly_a, poly_b):
+    """Returns the result of multiplying two polynomials
+    
+    Args:
+        poly_a (array[complex]): 1-D array of coefficients 
+        poly_b (array[complex]): 1-D array of coefficients 
+
+    Returns: 
+        array[complex]: complex coefficients of the product
+            of the polynomials
+    """
+    # Calculate the number of values required
+    deg_a = len(poly_a) - 1
+    deg_b = len(poly_b) - 1
+    deg_c = deg_a + deg_b
+    c_points = deg_c + 1
+    
+    # Figure out the nearest power of 2
+    nearest_power = nearest_power_of_2(c_points)
+    # Pad zeros to the polynomial
+    a_pad = nearest_power - len(poly_a)
+    poly_a_pad = np.pad(poly_a, (0,a_pad), 'constant')
+    
+    
+    b_pad = nearest_power - len(poly_b)
+    poly_b_pad = np.pad(poly_b, (0,b_pad), 'constant')
+    
+    # Convert the polynomials to value representation 
+    poly_A = coefficients_to_values(poly_a_pad)
+    poly_B = coefficients_to_values(poly_b_pad)
+
+    # Multiply
+    poly_C = np.multiply(poly_A, poly_B)
+    
+    # Convert back to coefficient representation
+    poly_c = values_to_coefficients(poly_C)
+    
+    return poly_c
+
+

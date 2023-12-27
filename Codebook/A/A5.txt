@@ -1,0 +1,29 @@
+----------------------------------------------------
+A5
+----------------------------------------------------
+A5.1
+----------------------------------------------------
+n_bits = 4
+dev = qml.device("default.qubit", wires=n_bits)
+
+@qml.qnode(dev)
+def hoh_circuit(combo):
+    """A circuit which applies Hadamard-oracle-Hadamard and returns probabilities.
+    
+    Args:
+        combo (list[int]): A list of bits representing a secret combination.
+
+    Returns:
+        list[float]: Measurement outcome probabilities.
+    """
+
+    qml.broadcast(qml.Hadamard, wires=[i for i in range(n_bits)], pattern="single")
+    qml.QubitUnitary(oracle_matrix(combo), wires=[i for i in range(n_bits)])
+    qml.broadcast(qml.Hadamard, wires=[i for i in range(n_bits)], pattern="single")
+    return qml.probs(wires=range(n_bits))
+
+
+
+A5.2
+----------------------------------------------------
+# Press submit to continue to the next node

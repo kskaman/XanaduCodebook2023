@@ -1,0 +1,81 @@
+G5
+----------------------------------------------------
+G5.1
+----------------------------------------------------
+n_bits = 5
+query_register = list(range(n_bits))
+aux = [n_bits]
+all_wires = query_register+aux
+dev = qml.device('default.qubit', wires=all_wires)
+
+def oracle_multi(combos):
+    """Implement multi-solution oracle using sequence of multi-controlled X gates.
+    
+    Args:
+        combos (list[list[int]]): A list of solutions.
+    """
+    for combo in combos:
+        combo_str = ''.join(str(j) for j in combo)
+        qml.MultiControlledX(query_register, wires=aux, control_values=combo_str)
+
+
+
+G5.2
+----------------------------------------------------
+n_bits = 5
+query_register = list(range(n_bits))
+aux = [n_bits]
+all_wires = query_register+aux
+dev = qml.device('default.qubit', wires=all_wires, shots=None)
+
+def grover_iter_multi(combos, num_steps):
+    """Run Grover search for multiple secret combinations and a number 
+    of Grover steps.
+    
+    Args:
+        combos (list[list[int]]): The secret combination, represented as a list of bits.
+        num_steps (int): The number of Grover iterations to perform.
+
+    Returns: 
+        array[float]: Probability for observing different outcomes.
+    """
+    @qml.qnode(dev)
+    def inner_circuit():
+        qml.PauliX(wires=n_bits)
+        qml.Hadamard(wires=n_bits)
+        hadamard_transform(query_register)
+
+        for _ in range(num_steps):
+            ##################
+            # YOUR CODE HERE #
+            ##################
+            oracle_multi(combos)
+            diffusion(n_bits)
+        return qml.probs(wires=query_register)
+    
+    return inner_circuit()
+
+
+
+G5.3
+----------------------------------------------------
+m_list = range(3)
+opt_steps = []
+
+for m_bits in m_list:
+    combos = [[int(s) for s in np.binary_repr(j, n_bits)] for j in range(2**m_bits)]
+    step_list = range(1,10)
+    arr = []
+    for i in step_list:
+        arr.append(grover_iter_multi(combos, i)[0])
+    opt_steps.append(local_max_arg(arr))
+
+print("The optimal number of Grover steps for the number of solutions in", [1,2,4], "is", opt_steps, ".")
+
+
+
+G5.4
+----------------------------------------------------
+grad = -0.5
+intercept = 2.03
+# SUBMIT TO PLOT GRAPH

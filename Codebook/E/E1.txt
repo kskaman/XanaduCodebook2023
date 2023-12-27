@@ -1,0 +1,67 @@
+E1
+----------------------------------------------------
+E1.1
+----------------------------------------------------
+def encode(b):
+    """Returns three copes of Alice's bit b.
+    
+    Args:
+        b (int): Alice's bit she wants to send to Bob. Can be 0 or 1. 
+         
+    Returns: 
+        list(int): [b, b, b]
+    """
+    return [b, b, b]
+
+def noisy_channel(b, p):
+    """Returns a three-bit codeword message that Bob receives through a noisy channel.
+    
+    Args:
+        b (int): Alice's bit she wants to send to Bob. Can be 0 or 1. 
+        p (float): The probability that a bit is flipped. 
+         
+    Returns: 
+        list(int): The three-bit codeword that Bob receives. It might be different
+        than what Alice intended to send!
+    """
+    
+    alice_sends = encode(b) # Alice sends this to Bob
+    flip = np.random.uniform(0, 1)
+    for i in range(3):
+        if (flip <= p):
+            alice_sends[i] = 1 - alice_sends[i]
+    return alice_sends
+
+
+
+
+E1.2
+----------------------------------------------------
+def decode(codeword):
+    """Executes Bob's decoding procedure.
+
+    Args:
+        codeword (list(int)): The message Bob receives (a 3-bit string). 
+
+    Returns:
+        (int): A 0 or 1 — Bob's guess at what Alice's bit was.
+    """
+    zero = codeword.count(0)
+    one = codeword.count(1)
+    if (zero > one):
+        return 0
+    return 1
+
+def success(b, codeword):
+    """Determines if Bob's decoding procedure is successful.
+
+    Args:
+        b (int): Alice's bit she sent to Bob. Can be 0 or 1. 
+        codeword (list(int)): The message Bob receives (a 3-bit string). 
+         
+    Returns: 
+        (bool): True/False if Bob decodes correctly/incorrectly.
+    """
+    if (b == decode(codeword)):
+        return True
+    return False
