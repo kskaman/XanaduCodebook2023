@@ -1,0 +1,140 @@
+I14
+----------------------------------------------
+I14.1
+---------------------------------------------
+dev = qml.device('default.qubit', wires=2)
+
+# Starting from the state |00>, implement a PennyLane circuit
+# to construct each of the Bell basis states.
+
+@qml.qnode(dev)
+def prepare_psi_plus():
+    ##################
+    # YOUR CODE HERE #
+    ##################
+    qml.Hadamard(wires=0)
+    qml.CNOT(wires=[0,1])
+
+    # PREPARE (1/sqrt(2)) (|00> + |11>)
+
+    return qml.state()
+
+
+@qml.qnode(dev)
+def prepare_psi_minus():
+    ##################
+    # YOUR CODE HERE #
+    ##################
+    qml.PauliX(wires=0)
+    qml.Hadamard(wires=0)
+    qml.CNOT(wires=[0,1])
+    
+
+    # PREPARE (1/sqrt(2)) (|00> - |11>)
+    
+    return qml.state()
+
+
+
+@qml.qnode(dev)
+def prepare_phi_plus():
+    ##################
+    # YOUR CODE HERE #
+    ##################
+    
+    qml.Hadamard(wires=0)
+    qml.PauliX(wires=1)
+    qml.CNOT(wires=[0,1])
+
+    # PREPARE  (1/sqrt(2)) (|01> + |10>)
+ 
+    return qml.state()
+
+
+@qml.qnode(dev)
+def prepare_phi_minus():
+    ##################
+    # YOUR CODE HERE #
+    ##################
+    # Apply a Hadamard gate on the first qubit
+    qml.PauliX(wires=1)
+    qml.PauliX(wires=0)
+    qml.Hadamard(wires=0)
+    #
+    #qml.PauliZ(wires=0)
+    #qml.PauliZ(wires=1)
+    qml.CNOT(wires=[0, 1])
+    #qml.PauliZ(wires=0)
+    # Apply a Pauli-X gate on the second qubit, multiplied by a global phase of -i
+    
+    
+
+    # PREPARE  (1/sqrt(2)) (|01> - |10>)
+    
+    return qml.state()
+
+
+psi_plus = prepare_psi_plus()
+psi_minus = prepare_psi_minus()
+phi_plus = prepare_phi_plus()
+phi_minus = prepare_phi_minus()
+
+# Uncomment to print results
+#print(f"|ψ_+> = {psi_plus}")
+#print(f"|ψ_-> = {psi_minus}")
+#print(f"|ϕ_+> = {phi_plus}")
+#print(f"|ϕ_-> = {phi_minus}")
+
+
+
+
+
+
+I14.2
+----------------------------------------------
+dev = qml.device("default.qubit", wires=3)
+
+# State of first 2 qubits
+state = [0, 1]
+
+@qml.qnode(device=dev)
+def apply_control_sequence(state):
+    # Set up initial state of the first two qubits
+    if state[0] == 1:
+        qml.PauliX(wires=0)
+    if state[1] == 1:
+        qml.PauliX(wires=1) 
+
+    # Set up initial state of the third qubit - use |->
+    # so we can see the effect on the output
+    qml.PauliX(wires=2)
+    qml.Hadamard(wires=2)
+    
+    ##################
+    # YOUR CODE HERE #
+    ##################
+    
+    # IMPLEMENT THE MULTIPLEXER
+    # IF STATE OF FIRST TWO QUBITS IS 01, APPLY X TO THIRD QUBIT
+    
+    
+    ## another version
+    qml.PauliX(wires=0)
+    qml.Toffoli(wires=[0,1,2])
+    qml.PauliX(wires=0)
+    qml.PauliX(wires=1)
+    qml.Hadamard(wires=2)
+    qml.Toffoli(wires=[0,1,2])
+    qml.PauliX(wires=1)
+    qml.Hadamard(wires=2)
+    qml.adjoint(qml.S)(wires=2)
+    qml.Toffoli(wires=[0,1,2]) 
+    qml.S(wires=2)
+    
+    
+    
+    return qml.state()
+    
+
+print(apply_control_sequence(state))
+    
